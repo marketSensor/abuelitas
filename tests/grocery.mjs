@@ -1,0 +1,9 @@
+import ts from 'typescript';import vm from 'node:vm';import fs from 'node:fs';import assert from 'node:assert/strict';
+const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/grocery.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports});
+const {productQuery,scaleIngredient,groceryLines,grocerySearchUrl,groceryExport}=exports;
+assert.equal(productQuery('400 g de pâtes'),'pâtes');assert.equal(productQuery('2 gousses d’ail'),'ail');assert.equal(productQuery('1 cuillère à soupe d’huile d’olive'),'huile d’olive');assert.equal(productQuery('3 œufs'),'œufs');assert.equal(productQuery('1 cube de bouillon de légumes'),'bouillon de légumes');
+assert.equal(scaleIngredient('250 g de farine',2).text,'500 g de farine');assert.equal(scaleIngredient('1/2 litre de lait',3).text,'1,5 litre de lait');assert.equal(scaleIngredient('½ concombre',2).text,'1 concombre');assert.equal(scaleIngredient('2 à 3 pommes',2).review,true);assert.equal(scaleIngredient('Sel et poivre',2).review,true);
+const lines=groceryLines('600 ml d’eau\n200 g de riz\nSel et poivre',2);assert.equal(lines[0].include,false);assert.equal(lines[1].text,'400 g de riz');assert.equal(lines[2].review,true);assert.equal(groceryExport(lines),'400 g de riz\nSel et poivre');
+const url=new URL(grocerySearchUrl('huile & sel #bio'));assert.equal(url.hostname,'www.carrefour.fr');assert.equal(url.searchParams.get('q'),'huile & sel #bio');assert.equal(url.hash,'');
+console.log('PASS: extraction des produits, portions, fractions, quantités ambiguës, eau exclue, export et liens encodés.');
+const auchan=new URL(grocerySearchUrl('huile & sel #bio','auchan'));assert.equal(auchan.hostname,'www.auchan.fr');assert.equal(auchan.pathname,'/recherche');assert.equal(auchan.searchParams.get('text'),'huile & sel #bio');assert.equal(auchan.hash,'');console.log('PASS: Carrefour and Auchan searches preserve encoded ingredient names.');

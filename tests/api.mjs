@@ -1,0 +1,28 @@
+import ts from 'typescript';import vm from 'node:vm';import fs from 'node:fs';import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';import {webcrypto} from 'node:crypto';
+const db=new DatabaseSync(':memory:');db.exec(fs.readFileSync('drizzle/0000_odd_johnny_blaze.sql','utf8'));
+const bind=(sql,args=[])=>({bind:(...a)=>bind(sql,a),first:async()=>db.prepare(sql).get(...args)||null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>db.prepare(sql).run(...args)});
+let user={userId:'alice',displayName:'Alice',email:'alice@example.com'};const env={DB:{prepare:sql=>bind(sql),batch:async qs=>{db.exec('BEGIN');try{for(const q of qs)await q.run();db.exec('COMMIT')}catch(e){db.exec('ROLLBACK');throw e}}}};
+const code=ts.transpileModule(fs.readFileSync('app/api/data/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+const exampleExports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/recipe-examples.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:exampleExports});
+const exports={};vm.runInNewContext(code,{exports,require:n=>n==='cloudflare:workers'?{env}:n.includes('recipe-examples')?exampleExports:{getChatGPTUser:async()=>user},Response,Request,URL,crypto:webcrypto,console});
+async function post(body,origin='https://app.test'){return exports.POST(new Request('https://app.test/api/data',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)}))}
+let r=await post({action:'createFamily',name:'Famille A'});assert.equal(r.status,200);const family=(await r.json()).id;let data=await(await exports.GET()).json();assert.equal(data.families.length,1);const codeInvite=data.families[0].invite;
+r=await post({action:'saveRecipe',family,recipe:{title:'Tarte',ingredients:'3 pommes',steps:'Cuire',servings:4}});assert.equal(r.status,200);data=await(await exports.GET()).json();const recipe=data.recipes[0];assert.equal(recipe.title,'Tarte');
+user={userId:'bob',displayName:'Bob',email:'bob@example.com'};r=await post({action:'saveRecipe',family,recipe});assert.equal(r.status,403);data=await(await exports.GET()).json();assert.equal(data.recipes.length,0);
+r=await post({action:'join',code:codeInvite});assert.equal(r.status,200);r=await post({action:'saveRecipe',family,recipe:{...recipe,title:'modifiée'}});assert.equal(r.status,403);
+r=await post({action:'saveRecipe',family,recipe:{...recipe,id:undefined,parent:recipe.id,title:'Variante'}});assert.equal(r.status,200);
+r=await post({action:'list',family,items:[{text:'3 pommes',checked:false}]});assert.equal(r.status,200);data=await(await exports.GET()).json();assert.equal(JSON.parse(data.lists[0].data)[0].text,'3 pommes');
+r=await post({action:'rotate',family});assert.equal(r.status,403);r=await post({action:'createFamily',name:'test'},'https://evil.test');assert.equal(r.status,403);
+user={userId:'alice',displayName:'Alice',email:'alice@example.com'};r=await post({action:'rotate',family});assert.equal(r.status,200);user={userId:'eve',displayName:'Eve',email:'eve@example.com'};r=await post({action:'join',code:codeInvite});assert.equal(r.status,404);user=null;assert.equal((await exports.GET()).status,401);assert.equal((await post({action:'createFamily',name:'x'})).status,401);
+user={userId:'alice',displayName:'Alice',email:'alice@example.com'};
+r=await post({action:'importExamples',family});assert.equal(r.status,200);data=await(await exports.GET()).json();assert.equal(data.recipes.length,8);const sample=data.recipes.find(x=>x.exampleSource==='demo1');assert.ok(sample.photo.startsWith('https://images.unsplash.com/'));
+r=await post({action:'saveRecipe',family,recipe:{...sample,title:'Ma version personnelle'}});assert.equal(r.status,200);
+r=await post({action:'importExamples',family});assert.equal(r.status,200);data=await(await exports.GET()).json();assert.equal(data.recipes.length,8);assert.equal(data.recipes.find(x=>x.id===sample.id).title,'Ma version personnelle');assert.equal(data.recipes.find(x=>x.id===sample.id).exampleSource,'demo1');
+user={userId:'eve',displayName:'Eve',email:'eve@example.com'};assert.equal((await post({action:'importExamples',family})).status,403);
+console.log('PASS: exemples sans doublons, modifications conservées, import protégé.');
+console.log('PASS: création, sauvegarde, isolation des comptes, invitations, variantes, liste partagée, autorisations et révocation.');
+user={userId:'bob',displayName:'Bob'};assert.equal((await post({action:'deleteRecipe',family,id:recipe.id})).status,403);
+user={userId:'eve',displayName:'Eve'};assert.equal((await post({action:'deleteRecipe',family,id:recipe.id})).status,403);
+user={userId:'alice',displayName:'Alice'};assert.equal((await post({action:'deleteRecipe',family,id:recipe.id})).status,200);data=await(await exports.GET()).json();assert(!data.recipes.some(x=>x.id===recipe.id));assert(data.recipes.some(x=>x.parent===recipe.id));assert.equal((await post({action:'deleteRecipe',family,id:recipe.id})).status,404);
+assert.equal((await post({action:'deleteRecipe',family,id:sample.id})).status,200);data=await(await exports.GET()).json();assert(!data.recipes.some(x=>x.id===sample.id));
+console.log('PASS: author-only deletion, missing recipe error, variants retained and imported example removed.');

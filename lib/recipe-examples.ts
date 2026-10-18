@@ -1,0 +1,25 @@
+export type Recipe = {
+    id?: string;
+    family?: string;
+    creator?: string;
+    title: string;
+    author: string;
+    story: string;
+    ingredients: string;
+    steps: string;
+    category: string;
+    servings: number;
+    time: string;
+    photo: string;
+    parent?: string | null;
+    example?: boolean;
+    exampleSource?: string;
+};
+export const examples: Recipe[] = [
+    { id: 'demo1', example: true, title: 'Les pâtes du dimanche', author: 'Abuelitas', story: 'Une recette d’exemple à adapter : une sauce tomate qui mijote pendant que la table se prépare.', ingredients: '400 g de pâtes\n600 g de tomates concassées\n2 gousses d’ail\n2 cuillères à soupe d’huile d’olive\n6 feuilles de basilic\nSel et poivre', steps: 'Éplucher et hacher l’ail. Le faire revenir doucement dans l’huile, sans le brûler.\nAjouter les tomates, saler et poivrer. Laisser mijoter 25 minutes à feu doux.\nCuire les pâtes selon les indications du paquet. Garder une petite tasse d’eau de cuisson.\nMélanger les pâtes à la sauce. Ajouter un peu d’eau de cuisson si nécessaire et terminer par le basilic.', category: 'Plats', servings: 4, time: '35 min', photo: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=900&auto=format&fit=crop' },
+    { id: 'demo2', example: true, title: 'La tarte aux pommes', author: 'Abuelitas', story: 'Une recette d’exemple pour les goûters qui durent. À personnaliser avec votre touche de cannelle.', ingredients: '1 pâte brisée\n4 pommes\n50 g de sucre\n20 g de beurre\n1 pincée de cannelle', steps: 'Préchauffer le four à 180 °C. Étaler la pâte dans un moule et piquer le fond.\nÉplucher les pommes et les couper en fines tranches. Les disposer sur la pâte.\nRépartir le sucre, la cannelle et le beurre en petits morceaux.\nEnfourner 35 à 40 minutes, jusqu’à ce que les pommes soient tendres et la pâte dorée.', category: 'Desserts', servings: 6, time: '55 min', photo: 'https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=900&auto=format&fit=crop' },
+    { id: 'demo3', example: true, title: 'La salade des beaux jours', author: 'Abuelitas', story: 'Une recette d’exemple fraîche et rapide, pour un déjeuner à partager.', ingredients: '3 tomates\n1 concombre\n150 g de feta\n2 cuillères à soupe d’huile d’olive\n1 cuillère à soupe de jus de citron\nSel et poivre', steps: 'Laver les légumes. Couper les tomates en quartiers et le concombre en dés.\nÉmietter la feta au-dessus des légumes.\nMélanger l’huile et le jus de citron. Verser sur la salade.\nPoivrer, goûter avant de saler et mélanger délicatement.', category: 'Entrées', servings: 4, time: '15 min', photo: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=900&auto=format&fit=crop' },
+    { id: 'demo4', example: true, title: 'Les crêpes du mercredi', author: 'Abuelitas', story: 'Une base d’exemple pour les goûters en famille. Environ 12 crêpes, selon la taille de la poêle.', ingredients: '250 g de farine\n3 œufs\n500 ml de lait\n30 g de beurre\n1 cuillère à soupe de sucre\n1 pincée de sel', steps: 'Verser la farine, le sucre et le sel dans un saladier. Ajouter les œufs.\nIncorporer le lait progressivement en fouettant pour éviter les grumeaux.\nFaire fondre le beurre et l’ajouter à la pâte. Laisser reposer 30 minutes.\nChauffer une poêle antiadhésive. Verser une petite louche de pâte et répartir.\nCuire environ 1 minute, retourner puis cuire encore 30 secondes. Répéter.', category: 'Desserts', servings: 4, time: '50 min avec repos', photo: '' },
+    { id: 'demo5', example: true, title: 'Le velouté carotte & coco', author: 'Abuelitas', story: 'Une recette d’exemple douce et réconfortante, facile à préparer à l’avance.', ingredients: '800 g de carottes\n1 oignon\n200 ml de lait de coco\n600 ml d’eau\n1 cube de bouillon de légumes\n1 cuillère à soupe d’huile d’olive\n1 cuillère à café de curry', steps: 'Éplucher les carottes et les couper en rondelles. Émincer l’oignon.\nFaire revenir l’oignon dans l’huile 3 minutes, puis ajouter le curry et les carottes.\nAjouter l’eau et le bouillon. Couvrir et laisser cuire environ 25 minutes, jusqu’à ce que les carottes soient tendres.\nAjouter le lait de coco. Mixer prudemment hors du feu et ajuster la texture avec un peu d’eau.', category: 'Entrées', servings: 4, time: '35 min', photo: '' },
+    { id: 'demo6', example: true, title: 'Le gratin de courgettes', author: 'Abuelitas', story: 'Une recette d’exemple pour transformer quelques légumes en un plat à partager.', ingredients: '800 g de courgettes\n2 œufs\n200 ml de crème fraîche\n100 g de fromage râpé\n1 gousse d’ail\n1 cuillère à soupe d’huile d’olive\nSel et poivre', steps: 'Préchauffer le four à 180 °C. Laver et couper les courgettes en rondelles.\nFaire revenir les courgettes et l’ail haché dans l’huile pendant 10 minutes pour réduire leur eau.\nBattre les œufs avec la crème, le sel, le poivre et la moitié du fromage.\nMettre les courgettes dans un plat, verser le mélange et ajouter le reste du fromage.\nCuire environ 30 minutes, jusqu’à ce que le gratin soit doré et pris au centre.', category: 'Plats', servings: 4, time: '50 min', photo: '' }
+];
